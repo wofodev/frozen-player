@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frozen Player</title>
+</head>
+<body>
+    <style>
+        /*
+        https://www.colourlovers.com/palette/3194445/Anna_(Frozen)
+        */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr;
+            gap: 0px 15px;
+            grid-template-areas:
+                ". . .";
+                width: 100%;
+                height: 100%;
+        }
+
+        .container div {
+            height: 100%;
+            text-align: center;
+        }
+
+        img {
+            height: 100%;
+            width: auto;
+        }
+
+        #playElsa {
+            background-color: #a9e4f9;
+        }
+
+        #playAnna {
+            background-color: #F47DA5;
+        }
+
+        #playOlaf {
+            background-color: #C47FB6;
+        }
+
+        #playAnna:hover,
+        #playElsa:hover,
+        #playOlaf:hover {
+            background-color: #FFF6DB;
+        }
+
+
+    </style>
+
+    <div class="container">
+        <div id="playAnna">
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/8a/Anna_Frozen.png">
+        </div>
+        <div id="playElsa">
+            <img src="https://upload.wikimedia.org/wikipedia/en/5/5e/Elsa_from_Disney%27s_Frozen.png">
+        </div>
+        <div id="playOlaf">
+            <img src="https://upload.wikimedia.org/wikipedia/en/6/6d/Olaf_from_Disney%27s_Frozen.png">
+        </div>
+    </div>
+
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script>
+
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            //EXAMPLE spotify:user:1185903410:playlist:6YAnJeVC7tgOiocOG23Dd
+
+            //const Anna = "spotify:playlist:0sjUZPJd16ZwwcbbBYUEx7";
+            // const Elsa = "https://open.spotify.com/playlist/15YyeVprrqf8y2CEU1YnCn?si=c9e620e1048d467a";
+            // const Olaf = "https://open.spotify.com/playlist/7i8rMHvmwh6G0GVrz3anOy?si=8101907e8d604cad";
+
+            const Anna = "spotify:track:70b5Sq3ePOu3Gqg0hjlOtR";
+            const Elsa = "spotify:track:0qcr5FMsEO85NAQjrlDRKo";
+            const Olaf = "spotify:track:7bG6SQBGZthPDG5QJL5Gf7";
+
+            const token = 'BQATxFL6Zn3QGCHDPi_kPPhim0pd_6FhxSUsESJH9hMJ27pbgCKHVLeoEV_xCGjhaL7K_aJVQzDWLtNyCiP9h6m027UYhzzScEMIHp6uMPU2EEeSGcgwZqE5WzxluoI0lxkT0XCwymjl67lWDg0F2ir7icloqw';
+
+            //Generate Token: https://developer.spotify.com/documentation/web-playback-sdk/quick-start/#
+
+            const play = ({
+                spotify_uri,
+                playerInstance: {
+                    _options: {
+                    getOAuthToken
+                    }
+                },
+                device_id
+            }) => {
+                getOAuthToken(token => {
+                    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${device_id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ uris: [spotify_uri] }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    });
+                });
+            };
+
+            const player = new Spotify.Player({
+                name: 'Web Playback SDK Quick Start Player',
+                getOAuthToken: cb => { cb(token); },
+                volume: 0.5
+            });
+
+            let player_device_id = "null";
+
+            // Ready
+            player.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+                player_device_id = device_id;
+            });
+
+            // Not Ready
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+            });
+
+            player.addListener('initialization_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('authentication_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('account_error', ({ message }) => {
+                console.error(message);
+            });
+
+            document.getElementById('playAnna').onclick = function() {
+                playMusic(Anna);
+            }
+
+            document.getElementById('playElsa').onclick = function() {
+                playMusic(Elsa);
+            }
+
+            document.getElementById('playOlaf').onclick = function() {
+                playMusic(Olaf);
+            }
+
+            function playMusic(musicToPlay) {
+                // play({
+                //     playerInstance: player,
+                //     spotify_uri: 'spotify:track:70b5Sq3ePOu3Gqg0hjlOtR',
+                //     device_id: player_device_id
+                // });
+
+                play({
+                    playerInstance: player,
+                    spotify_uri: musicToPlay,
+                    device_id: player_device_id
+                });
+
+                player.togglePlay();
+
+                console.log("Playing");
+            }
+
+            player.connect();
+        }
+    </script>
+</body>
+</html>
